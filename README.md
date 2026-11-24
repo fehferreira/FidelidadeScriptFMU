@@ -1,9 +1,160 @@
 # FidelidadeScriptFMU
-Um compilador focado em cálculo de pontos de cashback e fidelidade
+
+**Integrantes (4 a 6 alunos):** _Preencher com o nome de todos os integrantes._
+
+Projeto acadêmico de um compilador para **FidelidadeScript**, uma linguagem específica de domínio (DSL) voltada à definição de regras de pontos e cashback em programas de fidelidade. A proposta é permitir descrever operações de forma simples e legível, com variáveis, expressões, condições e comandos próprios do domínio.
+
+## Exemplo
+
+```text
+decimal compra = 250.0;
+inteiro pontos = 0;
+se compra >= 200.0 {
+    pontos = pontos + 50;
+}
+creditar "cliente_42", pontos;
+resgatar "cupom_10", 100;
+```
+
+Nesse exemplo, a condição da compra determina quantos pontos serão creditados ao cliente, e depois são resgatados pontos para um cupom.
+
+## Comandos e regras de negócio
+
+A linguagem é planejada em torno dos seguintes comandos:
+
+- `creditar`: adicionar pontos à conta de um cliente.
+- `resgatar`: usar pontos em uma recompensa.
+- `expirar`: expirar pontos conforme as regras do programa.
+- `extrato`: consultar o histórico ou saldo de pontos.
+
+O compilador deverá validar regras do domínio, incluindo o limite de 100% para o percentual de cashback, a proibição de pontos negativos e o erro de execução ao tentar resgatar mais pontos do que o saldo disponível.
+
+## Requisitos do projeto final
+
+O projeto deve construir, em Python, um compilador completo para uma DSL criada pelo grupo, do código-fonte até a execução e passando pelas fases estudadas durante o semestre. A linguagem precisa refletir o domínio escolhido pelo grupo.
+
+### Formato de entrega
+
+- Grupo de **4 a 6 alunos**.
+- Entrega por meio do link de um repositório **público** no GitHub.
+- O README deve explicar o projeto e começar com o nome de todos os integrantes.
+- Apenas um membro do grupo realiza a entrega.
+- O compilador deve estar em um notebook `.ipynb` que execute do início ao fim usando **Reiniciar e executar tudo**, sem erros. A entrega somente em arquivos `.py` tem desconto de **0,5 ponto**.
+- O prazo é o informado pelo professor.
+
+Como ponto de partida, a **Célula 12** do notebook de referência apresenta a ficha da linguagem, uma função para conferir os requisitos mínimos e indica o que adaptar em cada passo.
+
+## Requisitos de qualidade — ficha da linguagem
+
+Preencham a ficha **antes de implementar o compilador** e executem `conferir_ficha(MINHA_FICHA)`. A ficha deve conter:
+
+- nome da linguagem e domínio;
+- pelo menos **3 tipos**;
+- pelo menos **2 comandos do domínio**;
+- pelo menos **2 regras de negócio**, que serão tratadas como erros ou avisos semânticos;
+- pelo menos **3 programas-exemplo**, escritos antes do compilador.
+
+Use este modelo no projeto e substitua os itens `TODO` e exemplos pelos dados da DSL do grupo:
+
+```python
+MINHA_FICHA = {
+    "nome": "TODO_Script",  # ex.: "ReceitaScript"
+    "dominio": "TODO",  # ex.: "receitas de cozinha"
+    "tipos": ["inteiro", "decimal", "texto", "logico"],  # mínimo 3
+    "comandos_dominio": [  # mínimo 2
+        # "adicionar <ingrediente>, <quantidade>;",
+        # "assar <minutos>, <temperatura>;",
+    ],
+    "regras_de_negocio": [  # mínimo 2
+        # "temperatura do forno entre 100 e 300 (erro)",
+        # "quantidade > 0 (erro)",
+    ],
+    "programas_exemplo": [  # mínimo 3, definidos antes do compilador
+        # """inteiro porcoes = 4; ...""",
+    ],
+}
+
+def conferir_ficha(f):
+    checagens = [
+        ("nome e domínio preenchidos", "TODO" not in f["nome"] + f["dominio"]),
+        ("pelo menos 3 tipos", len(f["tipos"]) >= 3),
+        ("pelo menos 2 comandos do domínio", len(f["comandos_dominio"]) >= 2),
+        ("pelo menos 2 regras de negócio", len(f["regras_de_negocio"]) >= 2),
+        ("pelo menos 3 programas-exemplo", len(f["programas_exemplo"]) >= 3),
+    ]
+    for texto, ok in checagens:
+        print(("✅" if ok else "⬜"), texto)
+    faltam = sum(not ok for _, ok in checagens)
+    print(
+        "\n🚀 Ficha completa! Agora adapte os Passos 1 a 9."
+        if not faltam
+        else f"\nFaltam {faltam} item(ns) na ficha."
+    )
+
+conferir_ficha(MINHA_FICHA)
+```
+
+## Requisitos funcionais e etapas de desenvolvimento
+
+Cada requisito R1–R9 corresponde a um estágio do projeto. O desenvolvimento começa pelo **R1 — ficha e programas-exemplo** e avança pelas fases do compilador.
+
+### R1 — Ficha e programas-exemplo
+
+- `MINHA_FICHA` deve estar preenchida e passar por todos os itens de `conferir_ficha`.
+- Incluir **3 programas-exemplo** na DSL; cada programa deve conter pelo menos um `se` ou um `enquanto`.
+
+### R2 — Análise léxica
+
+- Reconhecer pelo menos **20 tipos de token** e **8 palavras reservadas**, incluindo os comandos do domínio.
+- Ignorar comentários.
+- Exibir a tabela de tokens de um programa.
+- Para erros léxicos, informar linha, coluna e uma dica; implementar pelo menos **3 dicas específicas**.
+
+### R3 — Análise sintática e AST
+
+- Usar gramática Lark com parser **LALR**.
+- Suportar declarações, atribuições, expressões com pelo menos **4 níveis de precedência**, `se`/`senao`, `enquanto` e pelo menos **2 comandos do domínio**.
+- Construir a AST com `dataclass` e exibi-la por uma função como `mostrar_ast`.
+- Erros sintáticos devem informar linha, coluna e o que era esperado.
+
+### R4 — Análise semântica
+
+- Implementar tabela de símbolos com **escopo de bloco**.
+- Suportar pelo menos **3 tipos**, com coerção ou erro de tipo.
+- Validar pelo menos **2 regras de negócio** do domínio, sendo pelo menos uma delas um erro, e implementar pelo menos um tipo de aviso.
+- Demonstrar uma galeria com pelo menos **6 erros semânticos diferentes**. Todos os casos devem passar pelas fases léxica e sintática.
+
+### R5 — Código de Três Endereços
+
+- Gerar rótulos e desvios usando a **condição invertida**.
+- Gerar uma instrução própria para cada comando do domínio.
+- Exibir o TAC de um programa que contenha um laço e `se`/`senao`.
+
+### R6 — Otimização
+
+- Implementar pelo menos **3 técnicas** de otimização e mostrar o código antes e depois.
+- Em pelo menos **2 programas**, provar que a saída otimizada é igual à original e que o número de instruções executadas diminuiu.
+
+### R7 — Execução
+
+- Implementar uma máquina virtual que execute o TAC.
+- Cada comando do domínio deve produzir saída e alimentar pelo menos uma estatística exibida no resumo.
+- Tratar pelo menos **2 erros de execução**, como divisão por zero, laço infinito ou violação de regra de negócio com valores reais.
+
+### R8 — Testes automáticos
+
+- Implementar pelo menos **12 casos**, incluindo pelo menos **4 programas válidos**.
+- Incluir pelo menos um erro de cada fase: léxica, sintática, semântica e execução.
+- Todos os casos devem passar.
+
+### R9 — Interface e README
+
+- Criar um painel com `ipywidgets` que apresente os exemplos da linguagem e ofereça pelo menos **3 visões**, como Execução, Tokens e TAC.
+- O README final deve incluir nomes dos integrantes, tema, ficha da linguagem, tabela de tokens, gramática, instruções para executar, exemplos de saída e a contribuição de cada integrante.
 
 ## Preparar o ambiente Python
 
-O único arquivo executável do projeto é o notebook `main.ipynb`. As dependências externas estão centralizadas em `requirements.txt`.
+O desenvolvimento e a execução do compilador ficam concentrados no notebook `main.ipynb`, que é o único arquivo executável do projeto. As dependências externas estão centralizadas em `requirements.txt`.
 
 No terminal, a partir da pasta do projeto e com o interpretador Python desejado selecionado:
 
