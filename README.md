@@ -110,6 +110,18 @@ Cada requisito R1–R9 corresponde a um estágio do projeto. O desenvolvimento c
 - Exibir a tabela de tokens de um programa.
 - Para erros léxicos, informar linha, coluna e uma dica; implementar pelo menos **3 dicas específicas**.
 
+#### Implementação atual
+
+O Passo 1 está implementado em `main.ipynb`. O lexer Lark reconhece **38 tipos de token** e **17 palavras reservadas**, incluindo os comandos do domínio:
+
+`creditar`, `resgatar`, `expirar` e `extrato`.
+
+As demais palavras reservadas são `inteiro`, `decimal`, `texto`, `logico`, `mostrar`, `se`, `senao`, `enquanto`, `e`, `ou`, `nao`, `verdadeiro` e `falso`. Os tipos também cobrem identificadores, literais inteiros, decimais e de texto, operadores de comparação e aritméticos, e pontuação como vírgulas, ponto e vírgula, parênteses e chaves.
+
+Espaços em branco e comentários iniciados por `//` são ignorados. A função `mostrar_tokens(PROGRAMA_FIDELIDADE)` exibe a tabela completa do programa de exemplo, com tipo do token, lexema, linha e coluna.
+
+Erros léxicos são encapsulados em `ErroCompilacao` e exibem fase, linha, coluna e dica. Há dicas específicas para aspas simples, textos sem fechamento, os operadores `&`, `|` e `!`, comentários iniciados por `#`, o símbolo `%` e identificadores com acentos.
+
 ### R3 — Análise sintática e AST
 
 - Usar gramática Lark com parser **LALR**.
