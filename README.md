@@ -146,6 +146,16 @@ Erros sintáticos são convertidos em `ErroCompilacao` com fase, linha, coluna e
 - Validar pelo menos **2 regras de negócio** do domínio, sendo pelo menos uma delas um erro, e implementar pelo menos um tipo de aviso.
 - Demonstrar uma galeria com pelo menos **6 erros semânticos diferentes**. Todos os casos devem passar pelas fases léxica e sintática.
 
+#### Implementação atual
+
+O Passo 3 está implementado em `main.ipynb`. `TabelaSimbolos` mantém uma pilha de escopos: cada bloco de `se`, `senao` ou `enquanto` cria um escopo local, permitindo sombra de nomes e impedindo o uso de variáveis locais após o bloco.
+
+`AnalisadorSemantico` verifica os tipos `inteiro`, `decimal`, `texto` e `logico`. Ele converte automaticamente `inteiro` para `decimal` por meio do nó `Conv` da AST e registra erros para conversões incompatíveis, operações entre tipos incompatíveis e condições que não sejam lógicas.
+
+As regras de domínio verificadas são percentual de cashback acima de 100% e quantidades de pontos negativas, ambas como erros. Cashback de 0%, crédito de zero pontos e variáveis declaradas mas não usadas geram avisos, sem serem classificados como erros. A validação de resgate acima do saldo disponível é uma regra de execução prevista para o R7.
+
+A `GALERIA_SEMANTICA` contém **8 casos**: variável não declarada, tipo incompatível, declaração duplicada, condição não lógica, operação entre texto e número, variável fora do escopo, cashback acima do limite e pontos negativos. Cada fonte é analisada primeiro por `analisar_sintaxe`; o estágio então confirma que ela produz diagnóstico semântico. Os resultados ficam separados em `analisador.erros` e `analisador.avisos`.
+
 ### R5 — Código de Três Endereços
 
 - Gerar rótulos e desvios usando a **condição invertida**.
