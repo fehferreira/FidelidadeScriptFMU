@@ -110,6 +110,18 @@ Cada requisito R1–R9 corresponde a um estágio do projeto. O desenvolvimento c
 - Exibir a tabela de tokens de um programa.
 - Para erros léxicos, informar linha, coluna e uma dica; implementar pelo menos **3 dicas específicas**.
 
+#### Implementação atual
+
+O Passo 1 está implementado em `main.ipynb`. O lexer Lark reconhece **38 tipos de token** e **17 palavras reservadas**, incluindo os comandos do domínio:
+
+`creditar`, `resgatar`, `expirar` e `extrato`.
+
+As demais palavras reservadas são `inteiro`, `decimal`, `texto`, `logico`, `mostrar`, `se`, `senao`, `enquanto`, `e`, `ou`, `nao`, `verdadeiro` e `falso`. Os tipos também cobrem identificadores, literais inteiros, decimais e de texto, operadores de comparação e aritméticos, e pontuação como vírgulas, ponto e vírgula, parênteses e chaves.
+
+Espaços em branco e comentários iniciados por `//` são ignorados. A função `mostrar_tokens(PROGRAMA_FIDELIDADE)` exibe a tabela completa do programa de exemplo, com tipo do token, lexema, linha e coluna.
+
+Erros léxicos são encapsulados em `ErroCompilacao` e exibem fase, linha, coluna e dica. Há dicas específicas para aspas simples, textos sem fechamento, os operadores `&`, `|` e `!`, comentários iniciados por `#`, o símbolo `%` e identificadores com acentos.
+
 ### R3 — Análise sintática e AST
 
 - Usar gramática Lark com parser **LALR**.
@@ -117,12 +129,32 @@ Cada requisito R1–R9 corresponde a um estágio do projeto. O desenvolvimento c
 - Construir a AST com `dataclass` e exibi-la por uma função como `mostrar_ast`.
 - Erros sintáticos devem informar linha, coluna e o que era esperado.
 
+#### Implementação atual
+
+O Passo 2 está implementado em `main.ipynb`. A gramática Lark usa o parser **LALR** e reutiliza os terminais do Passo 1. Ela reconhece declarações, atribuições, `mostrar`, blocos, `se`/`senao`, `enquanto` e os comandos `creditar`, `resgatar`, `expirar` e `extrato`.
+
+As expressões têm precedência, da menor para a maior, para `ou`, `e`, `nao`, comparações (`>`, `<`, `>=`, `<=`, `==`, `!=`), soma/subtração, multiplicação/divisão e operadores unários/parênteses.
+
+O `MontaAST` transforma a árvore sintática em nós `dataclass`, incluindo literais, variáveis, operações, declarações, atribuições, controle de fluxo e os quatro comandos de domínio. `mostrar_ast` apresenta a árvore do programa de demonstração.
+
+Erros sintáticos são convertidos em `ErroCompilacao` com fase, linha, coluna e uma lista legível dos terminais esperados. A célula demonstra programas com `se`/`senao`, `enquanto` e comandos do domínio, além de entradas com erros sintáticos.
+
 ### R4 — Análise semântica
 
 - Implementar tabela de símbolos com **escopo de bloco**.
 - Suportar pelo menos **3 tipos**, com coerção ou erro de tipo.
 - Validar pelo menos **2 regras de negócio** do domínio, sendo pelo menos uma delas um erro, e implementar pelo menos um tipo de aviso.
 - Demonstrar uma galeria com pelo menos **6 erros semânticos diferentes**. Todos os casos devem passar pelas fases léxica e sintática.
+
+#### Implementação atual
+
+O Passo 3 está implementado em `main.ipynb`. `TabelaSimbolos` mantém uma pilha de escopos: cada bloco de `se`, `senao` ou `enquanto` cria um escopo local, permitindo sombra de nomes e impedindo o uso de variáveis locais após o bloco.
+
+`AnalisadorSemantico` verifica os tipos `inteiro`, `decimal`, `texto` e `logico`. Ele converte automaticamente `inteiro` para `decimal` por meio do nó `Conv` da AST e registra erros para conversões incompatíveis, operações entre tipos incompatíveis e condições que não sejam lógicas.
+
+As regras de domínio verificadas são percentual de cashback acima de 100% e quantidades de pontos negativas, ambas como erros. Cashback de 0%, crédito de zero pontos e variáveis declaradas mas não usadas geram avisos, sem serem classificados como erros. A validação de resgate acima do saldo disponível é uma regra de execução prevista para o R7.
+
+A `GALERIA_SEMANTICA` contém **8 casos**: variável não declarada, tipo incompatível, declaração duplicada, condição não lógica, operação entre texto e número, variável fora do escopo, cashback acima do limite e pontos negativos. Cada fonte é analisada primeiro por `analisar_sintaxe`; o estágio então confirma que ela produz diagnóstico semântico. Os resultados ficam separados em `analisador.erros` e `analisador.avisos`.
 
 ### R5 — Código de Três Endereços
 
