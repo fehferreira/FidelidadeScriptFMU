@@ -129,6 +129,16 @@ Erros léxicos são encapsulados em `ErroCompilacao` e exibem fase, linha, colun
 - Construir a AST com `dataclass` e exibi-la por uma função como `mostrar_ast`.
 - Erros sintáticos devem informar linha, coluna e o que era esperado.
 
+#### Implementação atual
+
+O Passo 2 está implementado em `main.ipynb`. A gramática Lark usa o parser **LALR** e reutiliza os terminais do Passo 1. Ela reconhece declarações, atribuições, `mostrar`, blocos, `se`/`senao`, `enquanto` e os comandos `creditar`, `resgatar`, `expirar` e `extrato`.
+
+As expressões têm precedência, da menor para a maior, para `ou`, `e`, `nao`, comparações (`>`, `<`, `>=`, `<=`, `==`, `!=`), soma/subtração, multiplicação/divisão e operadores unários/parênteses.
+
+O `MontaAST` transforma a árvore sintática em nós `dataclass`, incluindo literais, variáveis, operações, declarações, atribuições, controle de fluxo e os quatro comandos de domínio. `mostrar_ast` apresenta a árvore do programa de demonstração.
+
+Erros sintáticos são convertidos em `ErroCompilacao` com fase, linha, coluna e uma lista legível dos terminais esperados. A célula demonstra programas com `se`/`senao`, `enquanto` e comandos do domínio, além de entradas com erros sintáticos.
+
 ### R4 — Análise semântica
 
 - Implementar tabela de símbolos com **escopo de bloco**.
