@@ -162,6 +162,16 @@ A `GALERIA_SEMANTICA` contém **8 casos**: variável não declarada, tipo incomp
 - Gerar uma instrução própria para cada comando do domínio.
 - Exibir o TAC de um programa que contenha um laço e `se`/`senao`.
 
+#### Implementação atual
+
+O Passo 4 está implementado em `main.ipynb`. `gerar_tac` recebe um `Programa` da AST e retorna uma lista estruturada de `InstrucaoTAC`; `mostrar_tac` exibe essa lista. Expressões são reduzidas a operações de três endereços com temporários, incluindo a coerção `inteiro` para `decimal` como `I2F`.
+
+Durante a geração, o gerador resolve nomes pelos escopos de bloco da linguagem e atribui nomes internos distintos às variáveis locais sombreadas, preservando a resolução da análise semântica.
+
+Desvios relacionais são gerados com o operador invertido para alcançar o rótulo falso: por exemplo, `compra >= 200.0` torna-se um salto `IF compra < 200.0 GOTO ...`. `e`, `ou` e `nao` preservam o fluxo lógico usando rótulos e desvios, e o `enquanto` gera rótulo de início, saída e retorno ao teste.
+
+Cada comando do domínio tem sua própria instrução TAC: `CREDITAR`, `RESGATAR`, `EXPIRAR` e `EXTRATO`. A demonstração `PROGRAMA_TAC` inclui `se`/`senao`, um laço e os quatro comandos; sua geração também verifica os desvios invertidos e a presença de rótulos.
+
 ### R6 — Otimização
 
 - Implementar pelo menos **3 técnicas** de otimização e mostrar o código antes e depois.
