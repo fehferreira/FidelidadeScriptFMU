@@ -216,9 +216,9 @@ A VM trata divisão por zero, resgate ou expiração acima do saldo, pontos inv�
 
 O Passo 7 está implementado em `main.ipynb`. A função `compilar()` integra tokenização, análise sintática, análise semântica, geração de TAC, otimização opcional e execução na máquina virtual. Erros semânticos são reportados como `ErroCompilacao`; erros de execução permanecem identificados como `ErroExecucao`.
 
-`CASOS_TESTE_R8` contém **16 testes**: 4 programas válidos e 12 casos de erro, cobrindo léxico (2), sintaxe (2), semântica (4) e execução (4). Os programas válidos exercitam expressões, `se`/`senao`, `enquanto` e os quatro comandos do domínio; também verificam saída, saldo e estatísticas. Os casos de erro confirmam a fase esperada. Os testes léxicos verificam linha, coluna e dica, e os sintáticos verificam a informação de expectativa.
+`CASOS_TESTE_R8` contém **16 casos de integração**: 4 programas válidos e 12 casos de erro, cobrindo léxico (2), sintaxe (2), semântica (4) e execução (4). Os programas válidos exercitam expressões, `se`/`senao`, `enquanto` e os quatro comandos do domínio; também verificam saída, saldo e estatísticas. Os casos de erro confirmam a fase esperada. Os testes léxicos verificam linha, coluna e dica, e os sintáticos verificam a informação de expectativa.
 
-A execução da célula chama `executar_testes_r8()`, que exibe o resultado de cada caso e interrompe o notebook com uma asserção se algum comportamento divergir. Os **16 testes passam** quando o notebook é executado em ordem.
+O Passo 8 adiciona **12 testes de regressão** em `TESTES_REGRESSAO_R8`, verificando ficha e exemplos, comentários e dicas léxicas, AST e diagnósticos sintáticos, coerção, escopo e avisos semânticos, galeria de erros, TAC com desvios invertidos, equivalência da otimização e estatísticas da VM. A execução em ordem roda ambas as suítes: **28 casos/verificações passam**; uma divergência interrompe o notebook com uma asserção.
 
 ### R9 — Interface e README
 
