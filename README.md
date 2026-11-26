@@ -177,6 +177,19 @@ Cada comando do domínio tem sua própria instrução TAC: `CREDITAR`, `RESGATAR
 - Implementar pelo menos **3 técnicas** de otimização e mostrar o código antes e depois.
 - Em pelo menos **2 programas**, provar que a saída otimizada é igual à original e que o número de instruções executadas diminuiu.
 
+#### Implementação atual
+
+O Passo 5 está implementado em `main.ipynb` com quatro técnicas: folding de constantes, propagação de constantes, simplificação algébrica (por exemplo, `x + 0` e `x * 1`) e eliminação de temporários mortos. A propagação é interrompida em rótulos e desvios para não transportar valores por caminhos de controle incertos. Temporários são identificados separadamente dos nomes da DSL; a eliminação conserva operações que podem produzir erros em execução, como divisão ou conversão.
+
+As demonstrações exibem o TAC antes e depois e executam ambos para comparar a saída e contar as instruções:
+
+| Programa | Saída original e otimizada | Instruções executadas |
+|---|---:|---:|
+| `inteiro total = 2 + 3; mostrar total;` | `[5]` | 4 → 3 |
+| `inteiro pontos = 10; pontos = pontos + 0; mostrar pontos;` | `[10]` | 5 → 4 |
+
+O executor dessa comparação cobre as instruções aritméticas e de saída usadas nesses exemplos; a máquina virtual completa para o TAC será implementada no R7.
+
 ### R7 — Execução
 
 - Implementar uma máquina virtual que execute o TAC.
