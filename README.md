@@ -162,10 +162,33 @@ A `GALERIA_SEMANTICA` contém **8 casos**: variável não declarada, tipo incomp
 - Gerar uma instrução própria para cada comando do domínio.
 - Exibir o TAC de um programa que contenha um laço e `se`/`senao`.
 
+#### Implementação atual
+
+O Passo 4 está implementado em `main.ipynb`. `gerar_tac` recebe um `Programa` da AST e retorna uma lista estruturada de `InstrucaoTAC`; `mostrar_tac` exibe essa lista. Expressões são reduzidas a operações de três endereços com temporários, incluindo a coerção `inteiro` para `decimal` como `I2F`.
+
+Durante a geração, o gerador resolve nomes pelos escopos de bloco da linguagem e atribui nomes internos distintos às variáveis locais sombreadas, preservando a resolução da análise semântica.
+
+Desvios relacionais são gerados com o operador invertido para alcançar o rótulo falso: por exemplo, `compra >= 200.0` torna-se um salto `IF compra < 200.0 GOTO ...`. `e`, `ou` e `nao` preservam o fluxo lógico usando rótulos e desvios, e o `enquanto` gera rótulo de início, saída e retorno ao teste.
+
+Cada comando do domínio tem sua própria instrução TAC: `CREDITAR`, `RESGATAR`, `EXPIRAR` e `EXTRATO`. A demonstração `PROGRAMA_TAC` inclui `se`/`senao`, um laço e os quatro comandos; sua geração também verifica os desvios invertidos e a presença de rótulos.
+
 ### R6 — Otimização
 
 - Implementar pelo menos **3 técnicas** de otimização e mostrar o código antes e depois.
 - Em pelo menos **2 programas**, provar que a saída otimizada é igual à original e que o número de instruções executadas diminuiu.
+
+#### Implementação atual
+
+O Passo 5 está implementado em `main.ipynb` com quatro técnicas: folding de constantes, propagação de constantes, simplificação algébrica (por exemplo, `x + 0` e `x * 1`) e eliminação de temporários mortos. A propagação é interrompida em rótulos e desvios para não transportar valores por caminhos de controle incertos. Temporários são identificados separadamente dos nomes da DSL; a eliminação conserva operações que podem produzir erros em execução, como divisão ou conversão.
+
+As demonstrações exibem o TAC antes e depois e executam ambos para comparar a saída e contar as instruções:
+
+| Programa | Saída original e otimizada | Instruções executadas |
+|---|---:|---:|
+| `inteiro total = 2 + 3; mostrar total;` | `[5]` | 4 → 3 |
+| `inteiro pontos = 10; pontos = pontos + 0; mostrar pontos;` | `[10]` | 5 → 4 |
+
+O executor dessa comparação cobre as instruções aritméticas e de saída usadas nesses exemplos; a máquina virtual completa para o TAC será implementada no R7.
 
 ### R7 — Execução
 
