@@ -13,21 +13,21 @@ se compra >= 200.0 {
     pontos = pontos + 50;
 }
 creditar "cliente_42", pontos;
-resgatar "cupom_10", 100;
+resgatar "cliente_42", "cupom_10", 100;
 ```
 
-Nesse exemplo, a condição da compra determina quantos pontos serão creditados ao cliente, e depois são resgatados pontos para um cupom.
+Nesse exemplo, a condição da compra determina quantos pontos serão creditados ao cliente, e depois parte do saldo desse mesmo cliente é usada em um cupom.
 
 ## Comandos e regras de negócio
 
 A linguagem é planejada em torno dos seguintes comandos:
 
 - `creditar`: adicionar pontos à conta de um cliente.
-- `resgatar`: usar pontos em uma recompensa.
+- `resgatar`: aplicar um cupom ao cliente informado e debitar pontos de sua conta.
 - `expirar`: expirar pontos conforme as regras do programa.
 - `extrato`: consultar o histórico ou saldo de pontos.
 
-O compilador deverá validar regras do domínio, incluindo o limite de 100% para o percentual de cashback, a proibição de pontos negativos e o erro de execução ao tentar resgatar mais pontos do que o saldo disponível.
+O compilador deverá validar regras do domínio, incluindo o limite de 100% para o percentual de cashback, a proibição de pontos negativos e erros de execução ao tentar resgatar ou expirar mais pontos do que o saldo disponível.
 
 ## Requisitos do projeto final
 
@@ -133,6 +133,8 @@ Erros léxicos são encapsulados em `ErroCompilacao` e exibem fase, linha, colun
 
 O Passo 2 está implementado em `main.ipynb`. A gramática Lark usa o parser **LALR** e reutiliza os terminais do Passo 1. Ela reconhece declarações, atribuições, `mostrar`, blocos, `se`/`senao`, `enquanto` e os comandos `creditar`, `resgatar`, `expirar` e `extrato`.
 
+O comando `resgatar` recebe cliente, cupom e quantidade nessa ordem: `resgatar "<cliente>", "<cupom>", <pontos>;`.
+
 As expressões têm precedência, da menor para a maior, para `ou`, `e`, `nao`, comparações (`>`, `<`, `>=`, `<=`, `==`, `!=`), soma/subtração, multiplicação/divisão e operadores unários/parênteses.
 
 O `MontaAST` transforma a árvore sintática em nós `dataclass`, incluindo literais, variáveis, operações, declarações, atribuições, controle de fluxo e os quatro comandos de domínio. `mostrar_ast` apresenta a árvore do programa de demonstração.
@@ -188,7 +190,7 @@ As demonstrações exibem o TAC antes e depois e executam ambos para comparar a 
 | `inteiro total = 2 + 3; mostrar total;` | `[5]` | 4 → 3 |
 | `inteiro pontos = 10; pontos = pontos + 0; mostrar pontos;` | `[10]` | 5 → 4 |
 
-O executor dessa comparação cobre as instruções aritméticas e de saída usadas nesses exemplos; a máquina virtual completa para o TAC será implementada no R7.
+O executor dessa comparação cobre as instruções aritméticas e de saída usadas nesses exemplos. A máquina virtual completa para o TAC está documentada no R7.
 
 ### R7 — Execução
 
@@ -196,11 +198,27 @@ O executor dessa comparação cobre as instruções aritméticas e de saída usa
 - Cada comando do domínio deve produzir saída e alimentar pelo menos uma estatística exibida no resumo.
 - Tratar pelo menos **2 erros de execução**, como divisão por zero, laço infinito ou violação de regra de negócio com valores reais.
 
+#### Implementação atual
+
+O Passo 6 está implementado em `main.ipynb` pela classe `MaquinaVirtual`. Ela executa declarações, movimentações, operações aritméticas e lógicas, desvios, rótulos e as quatro instruções de domínio. `ResultadoExecucao` reúne a saída, a memória, os saldos e o resumo estatístico.
+
+Os saldos são mantidos por cliente. A assinatura de resgate é `RESGATAR cliente, cupom, pontos`, correspondente à sintaxe `resgatar "<cliente>", "<cupom>", <pontos>;`. Crédito, resgate, expiração e extrato geram saída e atualizam contadores e totais próprios. A demonstração exercita os quatro comandos, `se`/`senao` e `enquanto`.
+
+A VM trata divisão por zero, resgate ou expiração acima do saldo, pontos inválidos, operações com operandos inválidos e desvios para rótulos inexistentes. Para detectar laços infinitos, o padrão é limitar a execução a **10.000 instruções**; o limite pode ser ajustado ao instanciar a máquina. A célula demonstra e verifica os diagnósticos de divisão por zero, saldo insuficiente e limite de instruções.
+
 ### R8 — Testes automáticos
 
 - Implementar pelo menos **12 casos**, incluindo pelo menos **4 programas válidos**.
 - Incluir pelo menos um erro de cada fase: léxica, sintática, semântica e execução.
 - Todos os casos devem passar.
+
+#### Implementação atual
+
+O Passo 7 está implementado em `main.ipynb`. A função `compilar()` integra tokenização, análise sintática, análise semântica, geração de TAC, otimização opcional e execução na máquina virtual. Erros semânticos são reportados como `ErroCompilacao`; erros de execução permanecem identificados como `ErroExecucao`.
+
+`CASOS_TESTE_R8` contém **16 casos de integração**: 4 programas válidos e 12 casos de erro, cobrindo léxico (2), sintaxe (2), semântica (4) e execução (4). Os programas válidos exercitam expressões, `se`/`senao`, `enquanto` e os quatro comandos do domínio; também verificam saída, saldo e estatísticas. Os casos de erro confirmam a fase esperada. Os testes léxicos verificam linha, coluna e dica, e os sintáticos verificam a informação de expectativa.
+
+O Passo 8 adiciona **12 testes de regressão** em `TESTES_REGRESSAO_R8`, verificando ficha e exemplos, comentários e dicas léxicas, AST e diagnósticos sintáticos, coerção, escopo e avisos semânticos, galeria de erros, TAC com desvios invertidos, equivalência da otimização e estatísticas da VM. A execução em ordem roda ambas as suítes: **28 casos/verificações passam**; uma divergência interrompe o notebook com uma asserção.
 
 ### R9 — Interface e README
 
